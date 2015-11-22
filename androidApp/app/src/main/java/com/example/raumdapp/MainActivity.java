@@ -1,15 +1,19 @@
 package com.example.raumdapp;
 
+
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ListView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddRoomDialog.RoomAdder {
 
     private BleScannerService bleScannerService;
     public boolean mBound;
@@ -21,8 +25,9 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, BleScannerService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
     }
+
+    private RoomListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,27 +36,29 @@ public class MainActivity extends AppCompatActivity {
 
         ListView v = ((ListView)findViewById(R.id.rooms));
 
-        RoomListAdapter adapter = new RoomListAdapter(this);
-
-        adapter.add(new Room("Kitchen", "kitchen", "123", 24));
-
+        adapter = new RoomListAdapter(this);
         v.setAdapter(adapter);
-
-
     }
 
-    private void onServiceConnected(){
+    /**
+     * Called after the service callback is available.
+     */
+    private void onServiceConnected() {
+        // update available rooms
+        adapter.clear();
+        adapter.addAll(bleScannerService.getAllRooms());
+        adapter.notifyDataSetChanged();
 
-        // After this callback service is available
+        // enable action button
+        FloatingActionButton actionButton = (FloatingActionButton)findViewById(R.id.add_room);
+        actionButton.setOnClickListener(addRoomClickListener);
 
-        bleScannerService.addRoom(new Room("Kitchen","kitchen","123",24));
-
+        // TODO enable / disable other changes (list view)
     }
 
 
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection mConnection = new ServiceConnection() {
-
 
         @Override
         public void onServiceConnected(ComponentName className,
@@ -69,4 +76,21 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnClickListener addRoomClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            AlertDialog d = AddRoomDialog.show(MainActivity.this, adapter, MainActivity.this);
+        }
+    };
+
+    public void addRoom(Room room) {
+        bleScannerService.addRoom(room);
+    }
+
+    @Override
+    public void onBackPressed() {
+        bleScannerService.stopSelf();
+        super.onBackPressed();
+    }
 }

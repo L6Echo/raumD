@@ -40,7 +40,7 @@ public class EstimoteManager {
 
     private static Context currentContext;
 
-    private static Map<String, Room> roomMap;
+    private static Map<String, Room> roomMap = new HashMap<String, Room>();
 
     // Create everything we need to monitor the beacons
     public static void Create(NotificationManager notificationMngr,
@@ -48,14 +48,6 @@ public class EstimoteManager {
         try {
             notificationManager = notificationMngr;
             currentContext = context;
-            roomMap = new HashMap<String, Room>();
-
-            //XXX test only
-            {
-                roomMap.put("c793e20c44d4", new Room("Kitchen", "", "c793e20c44d4",20));
-                roomMap.put("f7589002245c", new Room("Bathroom", "", "f7589002245c", 30));
-                roomMap.put("e5b554af496d", new Room("Living Room", "", "e5b554af496d", 25));
-            }
 
             // schedule heating room task to delete old rooms
             final HeatingRoomsTask heatingRoomsTask = new HeatingRoomsTask(new IOnRemoveRoom() {

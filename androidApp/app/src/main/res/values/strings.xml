@@ -2,4 +2,10 @@
     <string name="app_name">RaumDApp</string>
 
     <string name="title_rooms">Your rooms</string>
+    <string name="add_room">Add a room</string>
+    <string name="button_add_room">Add</string>
+
+    <string name="room_name">What room is this?</string>
+    <string name="room_desired_temperature">What is a good temperature for this room?</string>
+
 </resources>

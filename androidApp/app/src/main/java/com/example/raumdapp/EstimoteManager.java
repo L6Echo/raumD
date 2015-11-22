@@ -18,12 +18,12 @@ import android.util.Log;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.eddystone.Eddystone;
+import com.estimote.sdk.eddystone.EddystoneTelemetry;
 
 public class EstimoteManager {
 
     private static final String LOG_TAG = EstimoteManager.class.getSimpleName();
 
-    private static final int NOTIFICATION_ID = 123;
     private static BeaconManager beaconManager;
     private static NotificationManager notificationManager;
     public static final String EXTRAS_BEACON = "extrasBeacon";
@@ -46,6 +46,13 @@ public class EstimoteManager {
             currentContext = context;
             roomMap = new HashMap<String, Room>();
 
+            //XXX test only
+            {
+                roomMap.put("c793e20c44d4", new Room("Kitchen", "", "c793e20c44d4",20));
+                roomMap.put("f7589002245c", new Room("Bathroom", "", "f7589002245c", 30));
+                roomMap.put("e5b554af496d", new Room("Living Room", "", "e5b554af496d", 25));
+            }
+
             // Create a beacon manager
             beaconManager = new BeaconManager(currentContext);
 
@@ -59,9 +66,18 @@ public class EstimoteManager {
                     Log.d(LOG_TAG, "eddystone");
                     for (final Eddystone eddystone : list) {
                         final Room room = roomMap.get(eddystone.instance);
-                        if (room != null)
-                            if (eddystone.telemetry.temperature < room.getDesiredTemperature())
-                                postNotificationIntent("Heizung in Raum " + room.getName() + " wurde eingeschaltet!", "...", i);
+                        if (room != null) {
+                            final EddystoneTelemetry eddystoneTelemetry = eddystone.telemetry;
+
+                            if (eddystoneTelemetry != null)
+                                if (eddystone.telemetry.temperature < room.getDesiredTemperature())
+                                    postNotificationIntent(getUniqueID(room.getBeaconId()), room.getName(), "heating activated", i);
+                                else
+                                    Log.d(LOG_TAG, "Room already heated");
+                            else
+                                Log.d(LOG_TAG, "Could not load telemetry data");
+
+                        }
                     }
                 }
             });
@@ -82,7 +98,7 @@ public class EstimoteManager {
     }
 
     // Pops a notification in the task bar
-    public static void postNotificationIntent(String title, String msg, Intent i) {
+    public static void postNotificationIntent(int id, String title, String msg, Intent i) {
         i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivities(
                 currentContext, 0, new Intent[] { i },
@@ -94,7 +110,7 @@ public class EstimoteManager {
                 .setContentIntent(pendingIntent).build();
         notification.defaults |= Notification.DEFAULT_SOUND;
         notification.defaults |= Notification.DEFAULT_LIGHTS;
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        notificationManager.notify(id, notification);
     }
 
     // Stop beacons monitoring, and closes the service
@@ -104,6 +120,21 @@ public class EstimoteManager {
             beaconManager.disconnect();
         } catch (Exception e) {
         }
+    }
+
+    /**
+     * calculates a unique integer id of a given string
+     *
+     * @param id a random string id
+     * @return the unique integer hash of the id
+     * @see http://stackoverflow.com/questions/2624192/good-hash-function-for-strings
+     */
+    private static int getUniqueID(final String id) {
+        int hash = 7;
+        for (int i = 0; i < id.length(); i++)
+            hash = hash*31 + id.charAt(i);
+
+        return hash;
     }
 
     public static Map<String, Room> getRoomMap() {

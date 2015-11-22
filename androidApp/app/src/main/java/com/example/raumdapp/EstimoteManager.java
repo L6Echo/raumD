@@ -1,6 +1,10 @@
 package com.example.raumdapp;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -28,10 +32,11 @@ public class EstimoteManager {
     //private static final Region ALL_ESTIMOTE_BEACONS = new Region("regionId", UUID.fromString(ESTIMOTE_PROXIMITY_UUID), null, null);
     private static final Region ALL_ESTIMOTE_BEACONS = new Region("regionId", null, null, null);
 
-
     private static String scanId;
 
     private static Context currentContext;
+
+    private static Map<String, Room> roomMap;
 
     // Create everything we need to monitor the beacons
     public static void Create(NotificationManager notificationMngr,
@@ -39,6 +44,7 @@ public class EstimoteManager {
         try {
             notificationManager = notificationMngr;
             currentContext = context;
+            roomMap = new HashMap<String, Room>();
 
             // Create a beacon manager
             beaconManager = new BeaconManager(currentContext);
@@ -51,11 +57,12 @@ public class EstimoteManager {
                 @Override
                 public void onEddystonesFound(List<Eddystone> list) {
                     Log.d(LOG_TAG, "eddystone");
-                    for (final Eddystone eddystone : list)
-                        if (eddystone.instance.equals("-"))
-                            if (eddystone.telemetry.temperature < 22.0) {
-                                postNotificationIntent("Heizung in Raum " + "Küche"  +" wurde eingeschalten", "...", i);
-                            }
+                    for (final Eddystone eddystone : list) {
+                        final Room room = roomMap.get(eddystone.instance);
+                        if (room != null)
+                            if (eddystone.telemetry.temperature < room.getDesiredTemperature())
+                                postNotificationIntent("Heizung in Raum " + room.getName() + " wurde eingeschaltet!", "...", i);
+                    }
                 }
             });
 
@@ -97,5 +104,9 @@ public class EstimoteManager {
             beaconManager.disconnect();
         } catch (Exception e) {
         }
+    }
+
+    public static Map<String, Room> getRoomMap() {
+        return roomMap;
     }
 }

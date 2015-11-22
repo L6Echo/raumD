@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +24,9 @@ import com.estimote.sdk.eddystone.EddystoneTelemetry;
 public class EstimoteManager {
 
     private static final String LOG_TAG = EstimoteManager.class.getSimpleName();
+
+    // schedule for 30 seconds
+    private static final long SCHEDULE_MILLIS = TimeUnit.SECONDS.toMillis(30);
 
     private static BeaconManager beaconManager;
     private static NotificationManager notificationManager;
@@ -53,6 +57,10 @@ public class EstimoteManager {
                 roomMap.put("e5b554af496d", new Room("Living Room", "", "e5b554af496d", 25));
             }
 
+            // schedule heating room task to delete old rooms
+            final HeatingRoomsTask heatingRoomsTask = new HeatingRoomsTask();
+            new Timer().schedule(heatingRoomsTask, 0, SCHEDULE_MILLIS);
+
             // Create a beacon manager
             beaconManager = new BeaconManager(currentContext);
 
@@ -64,21 +72,25 @@ public class EstimoteManager {
                 @Override
                 public void onEddystonesFound(List<Eddystone> list) {
                     Log.d(LOG_TAG, "eddystone");
+
+                    // filter eddystones
                     for (final Eddystone eddystone : list) {
-                        final Room room = roomMap.get(eddystone.instance);
-                        if (room != null) {
-                            final EddystoneTelemetry eddystoneTelemetry = eddystone.telemetry;
+                            final Room room = roomMap.get(eddystone.instance);
+                            if (room != null && !heatingRoomsTask.containsRoom(room)) {
 
-                            if (eddystoneTelemetry != null)
-                                if (eddystone.telemetry.temperature < room.getDesiredTemperature())
-                                    postNotificationIntent(getUniqueID(room.getBeaconId()), room.getName(), "heating activated", i);
+                                // check temperature
+                                final EddystoneTelemetry eddystoneTelemetry = eddystone.telemetry;
+                                if (eddystoneTelemetry != null)
+                                    if (eddystone.telemetry.temperature < room.getDesiredTemperature()) {
+                                        postNotificationIntent(getUniqueID(room.getBeaconId()), room.getName(), "heating activated", i);
+                                        heatingRoomsTask.addRoom(room);
+                                    }
+                                    else
+                                        Log.d(LOG_TAG, "Room already heated");
                                 else
-                                    Log.d(LOG_TAG, "Room already heated");
-                            else
-                                Log.d(LOG_TAG, "Could not load telemetry data");
-
+                                    Log.d(LOG_TAG, "Could not load telemetry data");
+                            }
                         }
-                    }
                 }
             });
 
@@ -132,7 +144,7 @@ public class EstimoteManager {
     private static int getUniqueID(final String id) {
         int hash = 7;
         for (int i = 0; i < id.length(); i++)
-            hash = hash*31 + id.charAt(i);
+            hash = hash * 31 + id.charAt(i);
 
         return hash;
     }

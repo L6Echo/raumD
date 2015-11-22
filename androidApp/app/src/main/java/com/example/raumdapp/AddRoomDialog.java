@@ -23,11 +23,13 @@ public class AddRoomDialog {
         final View v = LayoutInflater.from(context).inflate(R.layout.view_add_room, null);
 
         AutoCompleteTextView textView = (AutoCompleteTextView)v.findViewById(R.id.room_name);
-        textView.setAdapter(new RoomNameAdapter(context));
+        //textView.setAdapter(new RoomNameAdapter(context));
         textView.setText(nextTestRoom.getName());
 
         DiscreteSeekBar s = (DiscreteSeekBar)v.findViewById(R.id.room_desired_temperature);
         s.setProgress(nextTestRoom.getDesiredTemperature());
+
+        v.findViewById(R.id.delete_room).setVisibility(View.GONE);
 
         AlertDialog ret = new AlertDialog.Builder(context)
                 .setTitle(R.string.add_room)

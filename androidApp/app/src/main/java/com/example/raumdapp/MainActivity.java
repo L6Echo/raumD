@@ -6,12 +6,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ListView;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class MainActivity extends AppCompatActivity implements AddRoomDialog.RoomAdder {
 
@@ -49,6 +53,29 @@ public class MainActivity extends AppCompatActivity implements AddRoomDialog.Roo
         adapter.addAll(bleScannerService.getAllRooms());
         adapter.notifyDataSetChanged();
 
+        adapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                Collection<Room> allRooms = new ArrayList<Room>();
+                allRooms.addAll(bleScannerService.getAllRooms());
+
+                for (int i = 0; i < adapter.getCount();i++) {
+                    Room r = adapter.getItem(i);
+                    if (allRooms.contains(r)) {
+                        bleScannerService.updateRoom(r);
+                        allRooms.remove(r);
+                    }
+                    else {
+                        bleScannerService.addRoom(r);
+                    }
+                }
+
+                for (Room r: allRooms)
+                    bleScannerService.removeRoom(r);
+
+            }
+        });
+
         // enable action button
         FloatingActionButton actionButton = (FloatingActionButton)findViewById(R.id.add_room);
         actionButton.setOnClickListener(addRoomClickListener);
@@ -85,11 +112,13 @@ public class MainActivity extends AppCompatActivity implements AddRoomDialog.Roo
     };
 
     public void addRoom(Room room) {
-        bleScannerService.addRoom(room);
+        adapter.add(room);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onBackPressed() {
+        bleScannerService.stopForeground(true);
         bleScannerService.stopSelf();
         super.onBackPressed();
     }

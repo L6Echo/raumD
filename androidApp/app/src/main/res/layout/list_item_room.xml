@@ -23,4 +23,10 @@
         android:id="@+id/room_desired_temperature"
         android:layout_gravity="bottom" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_room"
+        android:id="@+id/delete_room"/>
+
 </LinearLayout>

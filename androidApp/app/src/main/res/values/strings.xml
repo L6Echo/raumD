@@ -8,4 +8,6 @@
     <string name="room_name">What room is this?</string>
     <string name="room_desired_temperature">What is a good temperature for this room?</string>
 
+    <string name="delete_room">x</string>
+
 </resources>

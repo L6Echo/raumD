@@ -38,9 +38,7 @@ public class RoomListAdapter extends ArrayAdapter<Room> {
         discreteSeekBar.setOnProgressChangeListener(new DiscreteSeekBar.OnProgressChangeListener() {
             @Override
             public void onProgressChanged(DiscreteSeekBar seekBar, int value, boolean fromUser) {
-                if (!fromUser)
-                    return;
-                notifyDataSetChanged();
+
             }
 
             @Override
@@ -50,7 +48,7 @@ public class RoomListAdapter extends ArrayAdapter<Room> {
 
             @Override
             public void onStopTrackingTouch(DiscreteSeekBar seekBar) {
-
+                notifyDataSetChanged();
             }
         });
 

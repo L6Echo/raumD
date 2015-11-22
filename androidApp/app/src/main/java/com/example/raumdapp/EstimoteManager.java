@@ -36,7 +36,7 @@ public class EstimoteManager {
 
     private static Context currentContext;
 
-    private static Map<String, Room> roomMap;
+    private static Map<String, Room> roomMap = new HashMap<String, Room>();
 
     // Create everything we need to monitor the beacons
     public static void Create(NotificationManager notificationMngr,
@@ -44,7 +44,6 @@ public class EstimoteManager {
         try {
             notificationManager = notificationMngr;
             currentContext = context;
-            roomMap = new HashMap<String, Room>();
 
             // Create a beacon manager
             beaconManager = new BeaconManager(currentContext);

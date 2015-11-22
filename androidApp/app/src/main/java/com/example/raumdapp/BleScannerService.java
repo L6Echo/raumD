@@ -1,7 +1,9 @@
 package com.example.raumdapp;
 
 import android.app.IntentService;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -42,11 +44,19 @@ public class BleScannerService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(LOG_TAG,"created");
+        Log.d(LOG_TAG, "created");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        try {
+            EstimoteManager.Create((NotificationManager) this
+                            .getSystemService(Context.NOTIFICATION_SERVICE), this,
+                    intent);
+        }catch (Exception e){
+            Log.e(LOG_TAG,"Exception",e);
+        }
         return START_STICKY;
     }
 
@@ -54,6 +64,7 @@ public class BleScannerService extends IntentService {
 
     @Override
     public void onDestroy() {
+        EstimoteManager.stop();
         super.onDestroy();
         Log.d(LOG_TAG,"destroyed");
     }

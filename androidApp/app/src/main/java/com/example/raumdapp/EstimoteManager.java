@@ -46,13 +46,6 @@ public class EstimoteManager {
             currentContext = context;
             roomMap = new HashMap<String, Room>();
 
-            //XXX test only
-            {
-                roomMap.put("c793e20c44d4", new Room("Kitchen", "", "c793e20c44d4",20));
-                roomMap.put("f7589002245c", new Room("Bathroom", "", "f7589002245c", 30));
-                roomMap.put("e5b554af496d", new Room("Living Room", "", "e5b554af496d", 25));
-            }
-
             // Create a beacon manager
             beaconManager = new BeaconManager(currentContext);
 

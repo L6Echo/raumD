@@ -9,8 +9,7 @@
         android:layout_width="0dp"
         android:layout_weight="0.6"
         android:layout_height="wrap_content"
-        android:text=""
-        android:id="@+id/room_name" />
+        android:id="@+id/room_name"/>
 
     <org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
         android:layout_width="0dp"
@@ -18,6 +17,9 @@
         android:layout_height="wrap_content"
         app:dsb_min="10"
         app:dsb_max="38"
+        app:dsb_trackColor="@android:color/transparent"
+        app:dsb_progressColor="@color/colorAccent"
+        app:dsb_indicatorColor="@color/colorAccent"
         android:id="@+id/room_desired_temperature"
         android:layout_gravity="bottom" />
 

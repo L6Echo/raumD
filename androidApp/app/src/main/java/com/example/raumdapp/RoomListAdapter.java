@@ -31,8 +31,28 @@ public class RoomListAdapter extends ArrayAdapter<Room> {
 
         // TODO set icon
 
-        DiscreteSeekBar DiscreteSeekBar = (DiscreteSeekBar)v.findViewById(R.id.room_desired_temperature);
-        DiscreteSeekBar.setProgress(item.getDesiredTemperature());
+        DiscreteSeekBar discreteSeekBar = (DiscreteSeekBar)v.findViewById(R.id.room_desired_temperature);
+        discreteSeekBar.setProgress(item.getDesiredTemperature());
+
+
+        discreteSeekBar.setOnProgressChangeListener(new DiscreteSeekBar.OnProgressChangeListener() {
+            @Override
+            public void onProgressChanged(DiscreteSeekBar seekBar, int value, boolean fromUser) {
+                if (!fromUser)
+                    return;
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onStartTrackingTouch(DiscreteSeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(DiscreteSeekBar seekBar) {
+
+            }
+        });
 
         Button deleteButton = (Button)v.findViewById(R.id.delete_room);
         deleteButton.setOnClickListener(new View.OnClickListener() {

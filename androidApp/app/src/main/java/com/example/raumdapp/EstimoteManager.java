@@ -50,7 +50,12 @@ public class EstimoteManager {
             beaconManager.setEddystoneListener(new BeaconManager.EddystoneListener() {
                 @Override
                 public void onEddystonesFound(List<Eddystone> list) {
-                    Log.d(LOG_TAG,"eddystone");
+                    Log.d(LOG_TAG, "eddystone");
+                    for (final Eddystone eddystone : list)
+                        if (eddystone.instance.equals("-"))
+                            if (eddystone.telemetry.temperature < 22.0) {
+                                postNotificationIntent("Heizung in Raum " + "Küche"  +" wurde eingeschalten", "...", i);
+                            }
                 }
             });
 

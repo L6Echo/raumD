@@ -26,4 +26,8 @@ dependencies {
 
     // Estimote Android SDK;
     compile 'com.estimote:sdk:0.9.4@aar'
+
+    // UI
+    compile 'org.adw.library:discrete-seekbar:1.0.0'
+    compile 'com.android.support:design:23.1.1'
 }

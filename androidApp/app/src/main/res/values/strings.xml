@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">RaumDApp</string>
+
+    <string name="title_rooms">Your rooms</string>
 </resources>

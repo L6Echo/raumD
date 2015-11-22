@@ -37,11 +37,6 @@ public class MainActivity extends AppCompatActivity implements AddRoomDialog.Roo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        ListView v = ((ListView)findViewById(R.id.rooms));
-
-        adapter = new RoomListAdapter(this);
-        v.setAdapter(adapter);
     }
 
     /**
@@ -49,38 +44,12 @@ public class MainActivity extends AppCompatActivity implements AddRoomDialog.Roo
      */
     private void onServiceConnected() {
         // update available rooms
-        adapter.clear();
-        adapter.addAll(bleScannerService.getAllRooms());
-        adapter.notifyDataSetChanged();
-
-        adapter.registerDataSetObserver(new DataSetObserver() {
-            @Override
-            public void onChanged() {
-                Collection<Room> allRooms = new ArrayList<Room>();
-                allRooms.addAll(bleScannerService.getAllRooms());
-
-                for (int i = 0; i < adapter.getCount();i++) {
-                    Room r = adapter.getItem(i);
-                    if (allRooms.contains(r)) {
-                        bleScannerService.updateRoom(r);
-                        allRooms.remove(r);
-                    }
-                    else {
-                        bleScannerService.addRoom(r);
-                    }
-                }
-
-                for (Room r: allRooms)
-                    bleScannerService.removeRoom(r);
-
-            }
-        });
+        adapter = new RoomListAdapter(this, bleScannerService);
+        ((ListView)findViewById(R.id.rooms)).setAdapter(adapter);
 
         // enable action button
         FloatingActionButton actionButton = (FloatingActionButton)findViewById(R.id.add_room);
         actionButton.setOnClickListener(addRoomClickListener);
-
-        // TODO enable / disable other changes (list view)
     }
 
 
@@ -100,26 +69,32 @@ public class MainActivity extends AppCompatActivity implements AddRoomDialog.Roo
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
+
+            // TODO remove adapter
         }
     };
 
     private View.OnClickListener addRoomClickListener = new View.OnClickListener() {
-
         @Override
         public void onClick(View v) {
             AlertDialog d = AddRoomDialog.show(MainActivity.this, adapter, MainActivity.this);
         }
     };
 
+    /**
+     * Callback from AddRoomDialog for when a room is added.
+     */
     public void addRoom(Room room) {
         adapter.add(room);
-        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onBackPressed() {
-        bleScannerService.stopForeground(true);
-        bleScannerService.stopSelf();
+        if (mBound) {
+            bleScannerService.stopForeground(true);
+            bleScannerService.stopSelf();
+        }
+
         super.onBackPressed();
     }
 }

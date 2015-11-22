@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class BleScannerService extends IntentService {
+public class BleScannerService extends IntentService implements RoomListOperations {
 
 
     private static final String LOG_TAG = BleScannerService.class.getSimpleName();
@@ -84,7 +84,7 @@ public class BleScannerService extends IntentService {
     }
 
 
-
+    @Override
     public void addRoom(Room room){
 
         if(room == null) throw new IllegalStateException();
@@ -92,9 +92,10 @@ public class BleScannerService extends IntentService {
         EstimoteManager.getRoomMap().put(room.getBeaconId(), room);
         persist();
 
-        Log.d(LOG_TAG,"Added room "+room.getName());
+        Log.d(LOG_TAG, "Added room " + room.getName());
     }
 
+    @Override
     public void removeRoom(Room room){
 
         if(room == null) throw new IllegalStateException();
@@ -107,6 +108,7 @@ public class BleScannerService extends IntentService {
 
     }
 
+    @Override
     public void updateRoom(Room room){
 
         if(room == null) throw new IllegalStateException();

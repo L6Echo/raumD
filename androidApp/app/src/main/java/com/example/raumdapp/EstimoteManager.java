@@ -26,7 +26,7 @@ public class EstimoteManager {
     private static final String LOG_TAG = EstimoteManager.class.getSimpleName();
 
     // schedule for 30 seconds
-    private static final long SCHEDULE_MILLIS = TimeUnit.SECONDS.toMillis(30);
+    private static final long SCHEDULE_MILLIS = TimeUnit.SECONDS.toMillis(10);
 
     private static BeaconManager beaconManager;
     private static NotificationManager notificationManager;
@@ -58,7 +58,14 @@ public class EstimoteManager {
             }
 
             // schedule heating room task to delete old rooms
-            final HeatingRoomsTask heatingRoomsTask = new HeatingRoomsTask();
+            final HeatingRoomsTask heatingRoomsTask = new HeatingRoomsTask(new IOnRemoveRoom() {
+                @Override
+                public void onRemoveRoom(String roomID) {
+                    final Room room = roomMap.get(roomID);
+                    if (room != null)
+                        postNotificationIntent(getUniqueID(roomID), room.getName(), "heating deactivated", i);
+                }
+            });
             new Timer().schedule(heatingRoomsTask, 0, SCHEDULE_MILLIS);
 
             // Create a beacon manager
@@ -76,13 +83,14 @@ public class EstimoteManager {
                     // filter eddystones
                     for (final Eddystone eddystone : list) {
                             final Room room = roomMap.get(eddystone.instance);
-                            if (room != null && !heatingRoomsTask.containsRoom(room)) {
+                            if (room != null) {
 
                                 // check temperature
                                 final EddystoneTelemetry eddystoneTelemetry = eddystone.telemetry;
                                 if (eddystoneTelemetry != null)
                                     if (eddystone.telemetry.temperature < room.getDesiredTemperature()) {
-                                        postNotificationIntent(getUniqueID(room.getBeaconId()), room.getName(), "heating activated", i);
+                                        if (!heatingRoomsTask.containsRoom(room))
+                                            postNotificationIntent(getUniqueID(room.getBeaconId()), room.getName(), "heating activated", i);
                                         heatingRoomsTask.addRoom(room);
                                     }
                                     else
@@ -113,8 +121,8 @@ public class EstimoteManager {
     public static void postNotificationIntent(int id, String title, String msg, Intent i) {
         i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivities(
-                currentContext, 0, new Intent[] { i },
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                    currentContext, 0, new Intent[]{i},
+                    PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification = new Notification.Builder(currentContext)
                 .setContentTitle(title)
                 .setSmallIcon(R.drawable.ic_stat_notification)

@@ -1,9 +1,11 @@
 package com.example.raumdapp;
 
+import java.io.Serializable;
+
 /**
  * Created by mihai on 22.11.15.
  */
-public class Room {
+public class Room implements Serializable {
     /**
      * The name of the room.
      */
